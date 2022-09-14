@@ -1,0 +1,19 @@
+library(data.table)
+library(tidyverse)
+library(wordcloud2)
+basics_dt <- fread("../input/imdb-dataset/title.basics.tsv/data.tsv", quote = "", na.strings = c("NA", "", "\\N"))
+glimpse(basics_dt)
+set.seed(2000)
+twentieth_dt <- basics_dt %>%
+    filter(titleType %in% c("movie", "tvSeries")) %>%
+    filter(startYear >= 2000) %>%
+    distinct(titleType, primaryTitle, startYear, genres)
+glimpse(twentieth_dt)
+genre_count <- twentieth_dt %>%
+    filter(!is.na(genres)) %>%
+    separate(genres, c("genre1", "genre2", "genre3"), sep = ",", fill = "right") %>%
+    count(genre1)
+genre_count
+genre_count %>%
+    transmute(genre = genre1, freq = sqrt(n)) %>%
+    wordcloud2(genre_count, size = .8,  rotateRatio = 0)
